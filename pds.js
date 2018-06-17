@@ -22,6 +22,12 @@ function instance(system, id, config) {
 	return self;
 }
 
+instance.prototype.updateConfig = function(config) {
+	var self = this;
+
+	self.config = config;
+	self.init_tcp();
+};
 
 instance.prototype.init = function() {
 	var self = this;
@@ -37,7 +43,8 @@ instance.prototype.init_tcp = function() {
 	var receivebuffer = '';
 
 	if (self.socket !== undefined) {
-		self.socket.unload();
+		self.socket.destroy();
+		delete self.socket;
 	}
 
 	if (self.config.host) {
@@ -353,15 +360,6 @@ instance.prototype.action = function(action) {
 	cmd +="\r";
 
 	if (cmd !== undefined) {
-
-		if (self.socket === undefined) {
-			self.init_tcp();
-		}
-
-		// TODO: remove this when issue #71 is fixed
-		if (self.socket !== undefined && self.socket.host != self.config.host) {
-			self.init_tcp();
-		}
 
 		debug('sending tcp',cmd,"to",self.config.host);
 
