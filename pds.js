@@ -131,11 +131,11 @@ instance.prototype.config_fields = function () {
 			label: 'Variant',
 			id: 'variant',
 			default: '1',
-			choices: {
-				1: 'PDS-701',
-				2: 'PDS-901',
-				3: 'PDS-902'
-			}
+			choices: [
+				{ id: 1, label: 'PDS-701' },
+				{ id: 2, label: 'PDS-901' },
+				{ id: 3, label: 'PDS-902' }
+			]
 		}
 	]
 };
@@ -164,18 +164,18 @@ instance.prototype.actions = function(system) {
  				label: 'Input',
  				id: 'i',
  				default: '1',
- 				choices: {
-					1: '1 VGA',
-					2: '2 VGA',
-					3: '3 VGA',
-					4: '4 VGA',
-					5: '5 DVI',
-					6: '6 DVI',
-					7: '7 DVI (PDS-90x only)',
-					8: '8 DVI (PDS-90x only)',
-					9: '9 SDI (PDS-701/902 only)',
-					10: 'Black/Logo'
-					}
+ 				choices: [
+					{ id: 1, label: '1 VGA' },
+					{ id: 2, label: '2 VGA' },
+					{ id: 3, label: '3 VGA' },
+					{ id: 4, label: '4 VGA' },
+					{ id: 5, label: '5 DVI' },
+					{ id: 6, label: '6 DVI' },
+					{ id: 7, label: '7 DVI (PDS-90x only)' },
+					{ id: 8, label: '8 DVI (PDS-90x only)' },
+					{ id: 9, label: '9 SDI (PDS-701/902 only)' },
+					{ id: 10, label: 'Black/Logo' }
+				]
 				},{
 				type: 'textinput',
 				label: 'Filenumber (optional)',
@@ -190,7 +190,7 @@ instance.prototype.actions = function(system) {
 				label: 'Freeze',
 				id: 'm',
 				default: '1',
-				choices: { 0: 'unfrozen', 1: 'frozen'}
+				choices: [ { id: 0, label: 'unfrozen' }, { id: 1, label: 'frozen' } ]
 			}]},
 		'BLACK': {
 			label: 'Set Black Output',
@@ -199,7 +199,7 @@ instance.prototype.actions = function(system) {
 				label: 'Mode',
 				id: 'm',
 				default: '1',
-				choices: { 0: 'normal', 1: 'black'}
+				choices: [ { id: 0, label: 'normal' }, { id: 1, label: 'black' } ]
 			}]},
 		'OTPM': {
 			label: 'Set Testpattern on/off',
@@ -208,13 +208,13 @@ instance.prototype.actions = function(system) {
 				label: 'Output',
 				id: 'o',
 				default: '1',
-				choices: { 1: 'Program', 3: 'Preview'}
+				choices: [ { id: 1, label: 'Program' }, { id: 3, label: 'Preview' } ]
 			},{
 				type: 'dropdown',
 				label: 'Testpattern',
 				id: 'm',
 				default: '1',
-				choices: { 0: 'off', 1: 'on'}
+				choices: [ { id: 0, label: 'off' }, { id: 1, label: 'on' } ]
 			}]},
 		'OTPT': { label: 'Set Testpattern Type',
 			options: [{
@@ -222,29 +222,29 @@ instance.prototype.actions = function(system) {
 				label: 'Output',
 				id: 'o',
 				default: '1',
-				choices: { 1: 'Program', 3: 'Preview'}
+				choices: [ { id: 1, label: 'Program' }, { id: 3, label: 'Preview' } ]
 			},{
 				type: 'dropdown',
 				label: 'Type',
 				id: 't',
 				default: '4',
-				choices: {
-					4: '16x16 Grid',
-					5: '32x32 Grid',
-					1: 'H Ramp',
-					2: 'V Ramp',
-					6: 'Burst',
-					7: '75% Color Bars',
-					3: '100% Color Bars',
-					9: 'Vertical Gray Steps',
-					10: 'Horizontal Gray Steps',
-					8: '50% Gray',
-					11: 'White',
-					12: 'Black',
-					13: 'Red',
-					14: 'Green',
-					15: 'Blue'
-				}
+				choices: [
+					{ id: 4, label: '16x16 Grid' },
+					{ id: 5, label: '32x32 Grid' },
+					{ id: 1, label: 'H Ramp' },
+					{ id: 2, label: 'V Ramp' },
+					{ id: 6, label: 'Burst' },
+					{ id: 7, label: '75% Color Bars' },
+					{ id: 3, label: '100% Color Bars' },
+					{ id: 9, label: 'Vertical Gray Steps' },
+					{ id: 10, label: 'Horizontal Gray Steps' },
+					{ id: 8, label: '50% Gray' },
+					{ id: 11, label: 'White' },
+					{ id: 12, label: 'Black' },
+					{ id: 13, label: 'Red' },
+					{ id: 14, label: 'Green' },
+					{ id: 15, label: 'Blue' }
+				]
 			}]},
 		'ORBM': {
 			label: 'Set Rasterbox on/off',
@@ -253,13 +253,13 @@ instance.prototype.actions = function(system) {
 				label: 'Output',
 				id: 'o',
 				default: '1',
-				choices: { 1: 'Program', 3: 'Preview'}
+				choices: [ { id: 1, label: 'Program' }, { id: 3, label: 'Preview' } ]
 			},{
 				type: 'dropdown',
 				label: 'Rasterbox',
 				id: 'm',
 				default: '1',
-				choices: { 0: 'off', 1: 'on'}
+				choices: [ { id: 0, label: 'off' }, { id: 1, label: 'on' } ]
 			}]},
 		'TRNTIME': { label: 'Set Transition Time',
 			options: [{
@@ -276,12 +276,12 @@ instance.prototype.actions = function(system) {
 				label: 'Framestore',
 				id: 'l',
 				default: '1',
-				choices: {
-					0: 'Black',
-					1: 'Logo 1',
-					2: 'Logo 2',
-					3: 'Logo 3'
-				}
+				choices: [
+					{ id: 0, label: 'Black' },
+					{ id: 1, label: 'Logo 1' },
+					{ id: 2, label: 'Logo 2' },
+					{ id: 3, label: 'Logo 3' }
+				]
 			}]},
 		'LOGOSAVE': {
 			label: 'Save Logo',
@@ -290,11 +290,11 @@ instance.prototype.actions = function(system) {
 				label: 'Framestore',
 				id: 'l',
 				default: '1',
-				choices: {
-					1: 'Logo 1',
-					2: 'Logo 2',
-					3: 'Logo 3'
-				}
+				choices: [
+					{ id: 1, label: 'Logo 1' },
+					{ id: 2, label: 'Logo 2' },
+					{ id: 3, label: 'Logo 3' }
+				]
 			}]},
 		'AUTOTAKE': {
 			label: 'Set Autotake Mode on/off',
@@ -303,7 +303,7 @@ instance.prototype.actions = function(system) {
 				label: 'Autotake',
 				id: 'm',
 				default: '0',
-				choices: { 0: 'off', 1: 'on'}
+				choices: [ { id: 0, label: 'off' }, { id: 1, label: 'on' } ]
 			}]},
 		'PENDPIP': {
 			label: 'Pend PiP Mode on/off',
@@ -312,13 +312,13 @@ instance.prototype.actions = function(system) {
 				label: 'PiP',
 				id: 'p',
 				default: '1',
-				choices: { 1: 'PiP 1', 2: 'PiP 2'}
+				choices: [ { id: 1, label: 'PiP 1' }, { id: 2, label: 'PiP 2' } ]
 			},{
 				type: 'dropdown',
 				label: 'PiP on/off',
 				id: 'm',
 				default: '0',
-				choices: { 0: 'unpend (no change on Take)', 1: 'pend (PiP on/off on Take)'}
+				choices: [ { id: 0, label: 'unpend (no change on Take)' }, { id: 1, label: 'pend (PiP on/off on Take)' } ]
 			}]},
 		'PIPSEL': {
 			label: 'Pend PiP Input',
@@ -327,24 +327,24 @@ instance.prototype.actions = function(system) {
 				label: 'PiP',
 				id: 'p',
 				default: '1',
-				choices: { 0: 'All PiPs', 1: 'PiP 1', 2: 'PiP 2'}
+				choices: [ { id: 0, label: 'All PiPs' }, { id: 1, label: 'PiP 1' }, { id: 2, label: 'PiP 2' } ]
 			},{
 				type: 'dropdown',
  				label: 'Input',
  				id: 'i',
  				default: '1',
- 				choices: {
-					1: '1 VGA',
-					2: '2 VGA',
-					3: '3 VGA',
-					4: '4 VGA',
-					5: '5 DVI',
-					6: '6 DVI',
-					7: '7 DVI (PDS-90x only)',
-					8: '8 DVI (PDS-90x only)',
-					9: '9 SDI (PDS-701/902 only)',
-					10: 'Black/Logo'
-					}
+ 				choices: [
+					{ id: 1, label: '1 VGA' },
+					{ id: 2, label: '2 VGA' },
+					{ id: 3, label: '3 VGA' },
+					{ id: 4, label: '4 VGA' },
+					{ id: 5, label: '5 DVI' },
+					{ id: 6, label: '6 DVI' },
+					{ id: 7, label: '7 DVI (PDS-90x only)' },
+					{ id: 8, label: '8 DVI (PDS-90x only)' },
+					{ id: 9, label: '9 SDI (PDS-701/902 only)' },
+					{ id: 10, label: 'Black/Logo' }
+				]
 			}]},
 
 	});
@@ -369,12 +369,13 @@ instance.prototype.action = function(action) {
 			debug('Socket not connected :(');
 		}
 
+
 	}
 };
 
 instance.module_info = {
 	label: 'Barco PDS',
-	id: 'barco_pds',
+	id: 'pds',
 	version: '0.0.2'
 };
 
