@@ -161,10 +161,10 @@ instance.prototype.actions = function(system) {
 			 label: 'Select Input',
 			 options: [{
 				type: 'dropdown',
- 				label: 'Input',
- 				id: 'i',
- 				default: '1',
- 				choices: [
+				 label: 'Input',
+				 id: 'i',
+				 default: '1',
+				 choices: [
 					{ id: 1, label: '1 VGA' },
 					{ id: 2, label: '2 VGA' },
 					{ id: 3, label: '3 VGA' },
@@ -330,10 +330,10 @@ instance.prototype.actions = function(system) {
 				choices: [ { id: 0, label: 'All PiPs' }, { id: 1, label: 'PiP 1' }, { id: 2, label: 'PiP 2' } ]
 			},{
 				type: 'dropdown',
- 				label: 'Input',
- 				id: 'i',
- 				default: '1',
- 				choices: [
+				 label: 'Input',
+				 id: 'i',
+				 default: '1',
+				 choices: [
 					{ id: 1, label: '1 VGA' },
 					{ id: 2, label: '2 VGA' },
 					{ id: 3, label: '3 VGA' },
@@ -371,12 +371,7 @@ instance.prototype.action = function(action) {
 
 
 	}
-};
-
-instance.module_info = {
-	label: 'Barco PDS',
-	id: 'pds',
-	version: '0.0.2'
+	
 };
 
 instance_skel.extendedBy(instance);

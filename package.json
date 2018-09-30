@@ -1,6 +1,12 @@
 {
-  "name": "barco_pds",
-  "version": "0.0.2",
+  "name": "pds",
+	"legacy": ["barco_pds"],
+  "version": "1.0.0",
+	"api_version": "1.0.0",
+	"keywords": [ "Image Processing" ],
+	"manufacturer": "Barco",
+	"product": "PDS",
+	"shortname": "pds",
   "description": "Barco PDS seamless switcher plugin for Companion",
   "main": "pds.js",
   "scripts": {
