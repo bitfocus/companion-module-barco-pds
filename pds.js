@@ -25,8 +25,9 @@ function instance(system, id, config) {
 instance.prototype.updateConfig = function(config) {
 	var self = this;
 
-	self.config = config;
-	self.init_tcp();
+	debug("updateConfig() destroying and reiniting..");
+	self.destroy();
+	self.init();
 };
 
 instance.prototype.init = function() {
@@ -34,6 +35,9 @@ instance.prototype.init = function() {
 
 	debug = self.debug;
 	log = self.log;
+
+	self.states = {};
+	self.init_feedbacks();
 
 	self.init_tcp();
 };
@@ -78,7 +82,18 @@ instance.prototype.init_tcp = function() {
 		self.socket.on('receiveline', function (line) {
 			debug("Received line from PDS:", line);
 			// check which device and version we have
-			if (line.match(/ShellApp waiting for input/)) self.socket.send("\rVER -?\rIAVAIL -i 7 -?\rIAVAIL -i 8 -?\rIAVAIL -i 9 -?\rIAVAIL -i 10 -?\rOAVAIL -o 3 -?\r");
+			if (line.match(/ShellApp waiting for input/)) self.socket.send(
+				'\r' +
+				'VER -?\r' +
+				'IAVAIL -i 7 -?\r' +
+				'IAVAIL -i 8 -?\r' +
+				'IAVAIL -i 9 -?\r' +
+				'IAVAIL -i 10-?\r' +
+				'OAVAIL -o 3 -?\r' +
+				'PREVIEW -?\r' +
+				'PROGRAM -?\r' +
+				'LOGOSEL -?\r'
+			)
 			if (line.match(/VER \d/)) {
 				self.firmwareVersion = line.match(/VER ((?:\d+\.?)+)/)[1];
 				if (parseInt(self.firmwareVersion) >= 3) self.firmwareVersionIsOver3 = true;
@@ -89,6 +104,38 @@ instance.prototype.init_tcp = function() {
 			if (line.match(/IAVAIL -i 9 -m 1/)) self.hasAvailInput9 = true;
 			if (line.match(/IAVAIL -i 10 -m 1/)) self.hasAvailInput10 = true;
 			if (line.match(/OAVAIL -o 3 -m 1/)) self.hasTwoOutputs = true;
+
+			if (line.match(/PREVIEW -i\d+/))
+			{
+				self.states['preview_bg'] = parseInt(line.match(/-i(\d+)/)[1])
+				self.checkFeedbacks('preview_bg')
+			}
+			if (line.match(/PROGRAM -i\d+/))
+			{
+				self.states['program_bg'] = parseInt(line.match(/-i(\d+)/)[1])
+				self.checkFeedbacks('program_bg')
+			}
+			if (line.match(/LOGOSEL -l \d+/))
+			{
+				self.states['logo_bg'] = parseInt(line.match(/-l (\d+)/)[1])
+				self.checkFeedbacks('logo_bg')
+			}
+
+			// Save current state preview for feedback
+			if (line.match(/ISEL -i \d+/)) {
+				self.states['preview_bg'] = parseInt(line.match(/-i (\d+)/)[1])
+				self.checkFeedbacks('preview_bg')
+			}
+
+			// Save current state preview for feedback
+			if (line.match(/TAKE -e 0/)) {
+				var curPreview = self.states['preview_bg']
+				self.states['preview_bg'] = self.states['program_bg']
+				self.states['program_bg'] = curPreview
+				self.checkFeedbacks('preview_bg')
+				self.checkFeedbacks('program_bg')
+			}
+
 			if (line.match(/-e -\d+/)) {
 				switch (parseInt(line.match(/-e -(\d+)/)[1])) {
 					case 9999: self.log('error',"Received generic fail error from PDS "+ self.config.label +": "+ line); break;
@@ -131,11 +178,7 @@ instance.prototype.config_fields = function () {
 			label: 'Variant',
 			id: 'variant',
 			default: '1',
-			choices: [
-				{ id: 1, label: 'PDS-701' },
-				{ id: 2, label: 'PDS-901' },
-				{ id: 3, label: 'PDS-902' }
-			]
+			choices: self.PDS_VARIANT
 		}
 	]
 };
@@ -148,11 +191,156 @@ instance.prototype.destroy = function() {
 		self.socket.destroy();
 	}
 
-	debug("destroy", self.id);;
+	self.states = {};
+
+	debug("destroy", self.id);
 };
+
+instance.prototype.init_feedbacks = function() {
+	var self = this;
+	var feedbacks = {};
+
+	feedbacks['preview_bg'] = {
+		label: 'Change colors for preview',
+		description: 'If the input specified is in use by preview, change colors of the bank',
+		options: [
+			{
+				type: 'colorpicker',
+				label: 'Foreground color',
+				id: 'fg',
+				default: self.rgb(255,255,255)
+			},
+			{
+				type: 'colorpicker',
+				label: 'Background color',
+				id: 'bg',
+				default: self.rgb(0,255,0)
+			},
+			{
+				type: 'dropdown',
+				label: 'Input',
+				id: 'input',
+				default: 1,
+				choices: self.CHOICES_INPUTS
+			}
+		]
+	}
+
+	feedbacks['program_bg'] = {
+		label: 'Change colors for program',
+		description: 'If the input specified is in use by program, change colors of the bank',
+		options: [
+			{
+				type: 'colorpicker',
+				label: 'Foreground color',
+				id: 'fg',
+				default: self.rgb(255,255,255)
+			},
+			{
+				type: 'colorpicker',
+				label: 'Background color',
+				id: 'bg',
+				default: self.rgb(255,0,0)
+			},
+			{
+				type: 'dropdown',
+				label: 'Input',
+				id: 'input',
+				default: 1,
+				choices: self.CHOICES_INPUTS
+			}
+		]
+	}
+
+	feedbacks['logo_bg'] = {
+		label: 'Change colors for logo',
+		description: 'If the logo specified is in use, change colors of the bank',
+		options: [
+			{
+				type: 'colorpicker',
+				label: 'Foreground color',
+				id: 'fg',
+				default: self.rgb(255,255,255)
+			},
+			{
+				type: 'colorpicker',
+				label: 'Background color',
+				id: 'bg',
+				default: self.rgb(255,0,0)
+			},
+			{
+				type: 'dropdown',
+				label: 'Input',
+				id: 'input',
+				default: 1,
+				choices: self.CHOICES_LOGOS
+			}
+		]
+	}
+
+	self.setFeedbackDefinitions(feedbacks);
+}
+
+instance.prototype.feedback = function(feedback, bank) {
+	var self = this;
+
+	if (feedback.type === 'program_bg') {
+		if (self.states['program_bg'] === parseInt(feedback.options.input)) {
+			return { color: feedback.options.fg, bgcolor: feedback.options.bg };
+		}
+	}
+
+	if (feedback.type === 'preview_bg') {
+		if (self.states['preview_bg'] === parseInt(feedback.options.input)) {
+			return { color: feedback.options.fg, bgcolor: feedback.options.bg };
+		}
+	}
+
+	if (feedback.type === 'logo_bg') {
+		if (self.states['logo_bg'] === parseInt(feedback.options.input)) {
+			return { color: feedback.options.fg, bgcolor: feedback.options.bg };
+		}
+	}
+
+	return {};
+}
 
 instance.prototype.actions = function(system) {
 	var self = this;
+
+	self.PDS_VARIANT = [
+		{ id: 1, label: 'PDS-701' },
+		{ id: 2, label: 'PDS-901' },
+		{ id: 3, label: 'PDS-902' }
+	]
+
+	self.CHOICES_LOGOS = [
+		{id: 0, label: 'Black'},
+		{id: 1, label: 'Logo 1'},
+		{id: 2, label: 'Logo 2'},
+		{id: 3, label: 'Logo 3'}
+	]
+
+	self.CHOICES_INPUTS = [
+		{ id: 1, label: '1 VGA' },
+		{ id: 2, label: '2 VGA' },
+		{ id: 3, label: '3 VGA' },
+		{ id: 4, label: '4 VGA' },
+		{ id: 5, label: '5 DVI' },
+		{ id: 6, label: '6 DVI' },
+	]
+
+	if (self.config.variant === 1 || self.config.variant === 3) {
+		self.CHOICES_INPUTS.push({ id: 9, label: '9 SDI' })
+	}
+
+	if (self.config.variant >= 2) {
+		self.CHOICES_INPUTS.push({ id: 7, label: '7 DVI' })
+		self.CHOICES_INPUTS.push({ id: 8, label: '8 DVI' })
+	}
+
+	self.CHOICES_INPUTS.push({ id: 10, label: 'Black/Logo' })
+
 	self.system.emit('instance_actions', self.id, {
 		'TAKE': {
 			label: 'Take'
