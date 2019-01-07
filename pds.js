@@ -1,16 +1,16 @@
-var tcp = require('../../tcp')
-var instance_skel = require('../../instance_skel')
-var debug
-var log
+const tcp = require('../../tcp');
+const instance_skel = require('../../instance_skel');
+let debug;
+let log;
 
 const PDS_VARIANT_701 = 1
 const PDS_VARIANT_901 = 2
 const PDS_VARIANT_902 = 3
 
 function instance(system, id, config) {
-	var self = this
+    const self = this;
 
-	this.firmwareVersion = '0'
+    this.firmwareVersion = '0'
 	this.firmwareVersionIsOver3 = false // some commands are only working with firmware >= 3
 
 	// super-constructor
@@ -22,16 +22,16 @@ function instance(system, id, config) {
 }
 
 instance.prototype.updateConfig = function (config) {
-	var self = this
-	debug('updateConfig() destroying and reiniting..')
+    const self = this;
+    debug('updateConfig() destroying and reiniting..')
 	self.destroy()
 	self.init()
 }
 
 instance.prototype.init = function () {
-	var self = this
+    const self = this;
 
-	debug = self.debug
+    debug = self.debug
 	log = self.log
 
 	self.states = {}
@@ -42,9 +42,9 @@ instance.prototype.init = function () {
 }
 
 instance.prototype.dataPoller = function () {
-	var self = this
+    const self = this;
 
-	if (self.socket === undefined)
+    if (self.socket === undefined)
 		return
 
 	self.socket.send(
@@ -55,10 +55,10 @@ instance.prototype.dataPoller = function () {
 }
 
 instance.prototype.init_tcp = function () {
-	var self = this
-	var receivebuffer = ''
+    const self = this;
+    let receivebuffer = '';
 
-	if (self.socket !== undefined) {
+    if (self.socket !== undefined) {
 		self.socket.destroy()
 		delete self.socket
 	}
@@ -85,8 +85,8 @@ instance.prototype.init_tcp = function () {
 
 		// separate buffered stream into lines with responses
 		self.socket.on('data', function (chunk) {
-			var i = 0, line = '', offset = 0
-			receivebuffer += chunk
+            let i = 0, line = '', offset = 0;
+            receivebuffer += chunk
 			while ( (i = receivebuffer.indexOf('\r', offset)) !== -1) {
 				line = receivebuffer.substr(offset, i - offset)
 				offset = i + 1
@@ -137,8 +137,8 @@ instance.prototype.init_tcp = function () {
 
 			// Save current state preview for feedback
 			if (line.match(/TAKE -e 0/)) {
-				var curPreview = self.states['preview_bg']
-				self.states['preview_bg'] = self.states['program_bg']
+                const curPreview = self.states['preview_bg'];
+                self.states['preview_bg'] = self.states['program_bg']
 				self.states['program_bg'] = curPreview
 				self.checkFeedbacks('preview_bg')
 				self.checkFeedbacks('program_bg')
@@ -159,8 +159,8 @@ instance.prototype.init_tcp = function () {
 					case 9995: self.log('error','PDS '+ self.config.label +' says: Timeout occurred: '+ line) break
 					case 9994: self.log('error','PDS '+ self.config.label +' says: Parameter / data out of range: '+ line) break
 					case 9993: self.log('error','PDS '+ self.config.label +' says: Searching for data in an index, no matching data: '+ line) break
-					case 9992: self.log('error','PDS '+ self.config.label +' says: Checksum didn't match: '+ line) break
-					case 9991: self.log('error','PDS '+ self.config.label +' says: Version didn't match: '+ line) break
+					case 9992: self.log('error','PDS '+ self.config.label +' says: Checksum didn\'t match: '+ line) break
+					case 9991: self.log('error','PDS '+ self.config.label +' says: Version didn\'t match: '+ line) break
 					case 9990: self.log('error','Received UI related error from PDS '+ self.config.label +', current device interface not supported: '+ line) break
 					case 9989: self.log('error','PDS '+ self.config.label +' says: Pointer operation invalid: '+ line) break
 					case 9988: self.log('error','PDS '+ self.config.label +' says: Part of command had error: '+ line) break
@@ -175,9 +175,9 @@ instance.prototype.init_tcp = function () {
 
 // Return config fields for web config
 instance.prototype.config_fields = function () {
-	var self = this
+    const self = this;
 
-	return [
+    return [
 		{
 			type: 'textinput',
 			id: 'host',
@@ -198,9 +198,9 @@ instance.prototype.config_fields = function () {
 
 // When module gets deleted
 instance.prototype.destroy = function () {
-	var self = this
+    const self = this;
 
-	if (self.timer) {
+    if (self.timer) {
 		clearInterval(self.timer)
 		delete self.timer
 	}
@@ -215,10 +215,10 @@ instance.prototype.destroy = function () {
 }
 
 instance.prototype.init_feedbacks = function () {
-	var self = this
-	var feedbacks = {}
+    const self = this;
+    const feedbacks = {};
 
-	feedbacks['preview_bg'] = {
+    feedbacks['preview_bg'] = {
 		label: 'Change colors for preview',
 		description: 'If the input specified is in use by preview, change colors of the bank',
 		options: [
@@ -300,9 +300,9 @@ instance.prototype.init_feedbacks = function () {
 }
 
 instance.prototype.feedback = function (feedback, bank) {
-	var self = this
+    const self = this;
 
-	if (feedback.type === 'program_bg') {
+    if (feedback.type === 'program_bg') {
 		if (self.states['program_bg'] === parseInt(feedback.options.input)) {
 			return { color: feedback.options.fg, bgcolor: feedback.options.bg }
 		}
@@ -324,9 +324,9 @@ instance.prototype.feedback = function (feedback, bank) {
 }
 
 instance.prototype.actions = function (system) {
-	var self = this
+    const self = this;
 
-	self.PDS_VARIANT = [
+    self.PDS_VARIANT = [
 		{ id: 1, label: 'PDS-701' },
 		{ id: 2, label: 'PDS-901' },
 		{ id: 3, label: 'PDS-902' }
@@ -562,10 +562,10 @@ instance.prototype.actions = function (system) {
 }
 
 instance.prototype.action = function (action) {
-	var self = this
+    const self = this;
 
-	var cmd = action.action
-	for (var option in action.options) {
+    let cmd = action.action;
+    for (let option in action.options) {
 		if (action.options.hasOwnProperty(option) && action.options[option] !== '') cmd += ' -' + option + ' ' + action.options[option]
 	}
 	cmd +='\r'
