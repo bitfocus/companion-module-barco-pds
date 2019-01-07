@@ -152,20 +152,20 @@ instance.prototype.init_tcp = function () {
 				}
 
 				switch (parseInt(line.match(/-e -(\d+)/)[1])) {
-					case 9999: self.log('error','Received generic fail error from PDS '+ self.config.label +': '+ line) break
-					case 9998: self.log('error','PDS '+ self.config.label +' says: Operation is not applicable in current state: '+ line) break
-					case 9997: self.log('error','Received UI related error from PDS '+ self.config.label +', did not get response from device: '+ line) break
-					case 9996: self.log('error','Received UI related error from PDS '+ self.config.label +', did not get valid response from device: '+ line) break
-					case 9995: self.log('error','PDS '+ self.config.label +' says: Timeout occurred: '+ line) break
-					case 9994: self.log('error','PDS '+ self.config.label +' says: Parameter / data out of range: '+ line) break
-					case 9993: self.log('error','PDS '+ self.config.label +' says: Searching for data in an index, no matching data: '+ line) break
-					case 9992: self.log('error','PDS '+ self.config.label +' says: Checksum didn\'t match: '+ line) break
-					case 9991: self.log('error','PDS '+ self.config.label +' says: Version didn\'t match: '+ line) break
-					case 9990: self.log('error','Received UI related error from PDS '+ self.config.label +', current device interface not supported: '+ line) break
-					case 9989: self.log('error','PDS '+ self.config.label +' says: Pointer operation invalid: '+ line) break
-					case 9988: self.log('error','PDS '+ self.config.label +' says: Part of command had error: '+ line) break
-					case 9987: self.log('error','PDS '+ self.config.label +' says: Buffer overflow: '+ line) break
-					case 9986: self.log('error','PDS '+ self.config.label +' says: Initialization is not done (still in progress): '+ line) break
+					case 9999: self.log('error','Received generic fail error from PDS '+ self.config.label +': '+ line); break
+					case 9998: self.log('error','PDS '+ self.config.label +' says: Operation is not applicable in current state: '+ line); break
+					case 9997: self.log('error','Received UI related error from PDS '+ self.config.label +', did not get response from device: '+ line); break
+					case 9996: self.log('error','Received UI related error from PDS '+ self.config.label +', did not get valid response from device: '+ line); break
+					case 9995: self.log('error','PDS '+ self.config.label +' says: Timeout occurred: '+ line); break
+					case 9994: self.log('error','PDS '+ self.config.label +' says: Parameter / data out of range: '+ line); break
+					case 9993: self.log('error','PDS '+ self.config.label +' says: Searching for data in an index, no matching data: '+ line); break
+					case 9992: self.log('error','PDS '+ self.config.label +' says: Checksum didn\'t match: '+ line); break
+					case 9991: self.log('error','PDS '+ self.config.label +' says: Version didn\'t match: '+ line); break
+					case 9990: self.log('error','Received UI related error from PDS '+ self.config.label +', current device interface not supported: '+ line); break
+					case 9989: self.log('error','PDS '+ self.config.label +' says: Pointer operation invalid: '+ line); break
+					case 9988: self.log('error','PDS '+ self.config.label +' says: Part of command had error: '+ line); break
+					case 9987: self.log('error','PDS '+ self.config.label +' says: Buffer overflow: '+ line); break
+					case 9986: self.log('error','PDS '+ self.config.label +' says: Initialization is not done (still in progress): '+ line); break
 					default: self.log('error','Received unspecified error from PDS '+ self.config.label +': '+ line)
 				}
 			}
