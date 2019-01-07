@@ -8,11 +8,6 @@ function instance(system, id, config) {
 
 	this.firmwareVersion = "0";
 	this.firmwareVersionIsOver3 = false; // some commands are only working with firmware >= 3
-	this.hasAvailInput7 = false; // not every input is available on every model
-	this.hasAvailInput8 = false;
-	this.hasAvailInput9 = false;
-	this.hasAvailInput10 = false;
-	this.hasTwoOutputs = false;
 
 	// super-constructor
 	instance_skel.apply(this, arguments);
@@ -85,11 +80,6 @@ instance.prototype.init_tcp = function() {
 			if (line.match(/ShellApp waiting for input/)) self.socket.send(
 				'\r' +
 				'VER -?\r' +
-				'IAVAIL -i 7 -?\r' +
-				'IAVAIL -i 8 -?\r' +
-				'IAVAIL -i 9 -?\r' +
-				'IAVAIL -i 10-?\r' +
-				'OAVAIL -o 3 -?\r' +
 				'PREVIEW -?\r' +
 				'PROGRAM -?\r' +
 				'LOGOSEL -?\r'
@@ -99,11 +89,6 @@ instance.prototype.init_tcp = function() {
 				if (parseInt(self.firmwareVersion) >= 3) self.firmwareVersionIsOver3 = true;
 				debug ("version = ", self.firmwareVersion, " is over 3: ", self.firmwareVersionIsOver3);
 			}
-			if (line.match(/IAVAIL -i 7 -m 1/)) self.hasAvailInput7 = true;
-			if (line.match(/IAVAIL -i 8 -m 1/)) self.hasAvailInput8 = true;
-			if (line.match(/IAVAIL -i 9 -m 1/)) self.hasAvailInput9 = true;
-			if (line.match(/IAVAIL -i 10 -m 1/)) self.hasAvailInput10 = true;
-			if (line.match(/OAVAIL -o 3 -m 1/)) self.hasTwoOutputs = true;
 
 			if (line.match(/PREVIEW -i\d+/))
 			{
