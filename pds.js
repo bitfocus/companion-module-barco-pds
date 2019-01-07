@@ -19,7 +19,6 @@ function instance(system, id, config) {
 
 instance.prototype.updateConfig = function(config) {
 	var self = this;
-
 	debug("updateConfig() destroying and reiniting..");
 	self.destroy();
 	self.init();
@@ -84,6 +83,7 @@ instance.prototype.init_tcp = function() {
 				'PROGRAM -?\r' +
 				'LOGOSEL -?\r'
 			)
+
 			if (line.match(/VER \d/)) {
 				self.firmwareVersion = line.match(/VER ((?:\d+\.?)+)/)[1];
 				if (parseInt(self.firmwareVersion) >= 3) self.firmwareVersionIsOver3 = true;
@@ -122,6 +122,12 @@ instance.prototype.init_tcp = function() {
 			}
 
 			if (line.match(/-e -\d+/)) {
+				if (line.match(/ISEL -e -9999/)) {
+					self.log('error', 'Current selected input "'+ self.states['preview_bg']+
+						'" on '+ self.config.label + ' is' + ' a invalid signal!')
+					return
+				}
+
 				switch (parseInt(line.match(/-e -(\d+)/)[1])) {
 					case 9999: self.log('error',"Received generic fail error from PDS "+ self.config.label +": "+ line); break;
 					case 9998: self.log('error',"PDS "+ self.config.label +" says: Operation is not applicable in current state: "+ line); break;
@@ -547,7 +553,7 @@ instance.prototype.action = function(action) {
 
 
 	}
-	
+
 };
 
 instance_skel.extendedBy(instance);
