@@ -37,8 +37,18 @@ instance.prototype.init = function() {
 	self.states = {};
 	self.init_feedbacks();
 
-	self.init_tcp();
-};
+instance.prototype.dataPoller = function () {
+	var self = this
+
+	if (self.socket === undefined)
+		return
+
+	self.socket.send(
+		'PREVIEW -?\r' +
+		'PROGRAM -?\r' +
+		'LOGOSEL -?\r'
+	)
+}
 
 instance.prototype.init_tcp = function() {
 	var self = this;
@@ -57,13 +67,17 @@ instance.prototype.init_tcp = function() {
 		});
 
 		self.socket.on('error', function (err) {
-			debug("Network error", err);
-			self.log('error',"Network error: " + err.message);
-		});
+			debug('Network error', err)
+			self.log('error','Network error: ' + err.message)
+			clearInterval(self.timer)
+		})
 
 		self.socket.on('connect', function () {
-			debug("Connected");
-		});
+			debug('Connected')
+
+			// Poll data from PDS every 4 secs
+			self.timer = setInterval(self.dataPoller.bind(self), 4000)
+		})
 
 		// separate buffered stream into lines with responses
 		self.socket.on('data', function (chunk) {
@@ -180,8 +194,13 @@ instance.prototype.config_fields = function () {
 };
 
 // When module gets deleted
-instance.prototype.destroy = function() {
-	var self = this;
+instance.prototype.destroy = function () {
+	var self = this
+
+	if (self.timer) {
+		clearInterval(self.timer)
+		delete self.timer
+	}
 
 	if (self.socket !== undefined) {
 		self.socket.destroy();
