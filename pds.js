@@ -3,6 +3,10 @@ var instance_skel = require('../../instance_skel');
 var debug;
 var log;
 
+const PDS_VARIANT_701 = 1
+const PDS_VARIANT_901 = 2
+const PDS_VARIANT_902 = 3
+
 function instance(system, id, config) {
 	var self = this;
 
@@ -322,11 +326,14 @@ instance.prototype.actions = function(system) {
 		{ id: 6, label: '6 DVI' },
 	]
 
-	if (self.config.variant === 1 || self.config.variant === 3) {
+	// See self.PDS_VARIANT
+	if (self.config.variant == PDS_VARIANT_701 ||
+		self.config.variant == PDS_VARIANT_902) {
 		self.CHOICES_INPUTS.push({ id: 9, label: '9 SDI' })
 	}
 
-	if (self.config.variant >= 2) {
+	// See self.PDS_VARIANT
+	if (self.config.variant >= PDS_VARIANT_901) {
 		self.CHOICES_INPUTS.push({ id: 7, label: '7 DVI' })
 		self.CHOICES_INPUTS.push({ id: 8, label: '8 DVI' })
 	}
