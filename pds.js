@@ -327,9 +327,9 @@ instance.prototype.actions = function (system) {
 	const self = this;
 
 	self.PDS_VARIANT = [
-		{ id: 1, label: 'PDS-701' },
-		{ id: 2, label: 'PDS-901' },
-		{ id: 3, label: 'PDS-902' }
+		{ id: PDS_VARIANT_701, label: 'PDS-701' },
+		{ id: PDS_VARIANT_901, label: 'PDS-901' },
+		{ id: PDS_VARIANT_902, label: 'PDS-902' }
 	]
 
 	self.CHOICES_LOGOS = [
@@ -571,18 +571,15 @@ instance.prototype.action = function (action) {
 	cmd +='\r'
 
 	if (cmd !== undefined) {
-
 		debug('sending tcp',cmd,'to',self.config.host)
 
 		if (self.socket !== undefined && self.socket.connected) {
 			self.socket.send(cmd)
-		} else {
+		}
+		else {
 			debug('Socket not connected :(')
 		}
-
-
 	}
-
 }
 
 instance_skel.extendedBy(instance)
