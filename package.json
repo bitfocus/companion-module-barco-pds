@@ -1,17 +1,19 @@
 {
-  "name": "pds",
+	"name": "pds",
 	"legacy": ["barco_pds"],
-  "version": "1.0.0",
+	"version": "1.0.1",
 	"api_version": "1.0.0",
-	"keywords": [ "Image Processing" ],
+	"keywords": [
+		"Image Processing"
+	],
 	"manufacturer": "Barco",
 	"product": "PDS",
 	"shortname": "pds",
-  "description": "Barco PDS seamless switcher plugin for Companion",
-  "main": "pds.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Dorian Meid <meid@backstage.org>",
-  "license": "ISC"
+	"description": "Barco PDS seamless switcher plugin for Companion",
+	"main": "pds.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Dorian Meid <meid@backstage.org>",
+	"license": "MIT"
 }
