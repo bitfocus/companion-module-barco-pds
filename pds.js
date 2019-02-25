@@ -320,7 +320,7 @@ instance.prototype.actions = function(system) {
 				default: '0',
 				choices: [ { id: 0, label: 'unpend (no change on Take)' }, { id: 1, label: 'pend (PiP on/off on Take)' } ]
 			}]},
-		'PIPSEL': {
+		'PIPISEL': {
 			label: 'Pend PiP Input',
 			options: [{
 				type: 'dropdown',
