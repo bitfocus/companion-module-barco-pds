@@ -1,16 +1,16 @@
-const tcp = require('../../tcp');
-const instance_skel = require('../../instance_skel');
-let debug;
-let log;
+const tcp = require('../../tcp')
+const instance_skel = require('../../instance_skel')
+let debug
+let log
 
 const PDS_VARIANT_701 = 1
 const PDS_VARIANT_901 = 2
 const PDS_VARIANT_902 = 3
 
-function instance(system, id, config) {
-    const self = this;
+function instance (system, id, config) {
+	const self = this
 
-    this.firmwareVersion = '0'
+	this.firmwareVersion = '0'
 	this.firmwareVersionIsOver3 = false // some commands are only working with firmware >= 3
 
 	// super-constructor
@@ -22,14 +22,14 @@ function instance(system, id, config) {
 }
 
 instance.prototype.updateConfig = function (config) {
-	const self = this;
+	const self = this
 	debug('updateConfig() destroying and reiniting..')
 	self.destroy()
 	self.init()
 }
 
 instance.prototype.init = function () {
-	const self = this;
+	const self = this
 
 	debug = self.debug
 	log = self.log
@@ -42,7 +42,7 @@ instance.prototype.init = function () {
 }
 
 instance.prototype.dataPoller = function () {
-	const self = this;
+	const self = this
 
 	if (self.socket === undefined)
 		return
@@ -55,8 +55,8 @@ instance.prototype.dataPoller = function () {
 }
 
 instance.prototype.init_tcp = function () {
-	const self = this;
-	let receivebuffer = '';
+	const self = this
+	let receivebuffer = ''
 
 	if (self.socket !== undefined) {
 		self.socket.destroy()
@@ -72,7 +72,7 @@ instance.prototype.init_tcp = function () {
 
 		self.socket.on('error', function (err) {
 			debug('Network error', err)
-			self.log('error','Network error: ' + err.message)
+			self.log('error', 'Network error: ' + err.message)
 			clearInterval(self.timer)
 		})
 
@@ -85,9 +85,9 @@ instance.prototype.init_tcp = function () {
 
 		// separate buffered stream into lines with responses
 		self.socket.on('data', function (chunk) {
-			let i = 0, line = '', offset = 0;
+			let i = 0, line = '', offset = 0
 			receivebuffer += chunk
-			while ( (i = receivebuffer.indexOf('\r', offset)) !== -1) {
+			while ((i = receivebuffer.indexOf('\r', offset)) !== -1) {
 				line = receivebuffer.substr(offset, i - offset)
 				offset = i + 1
 				self.socket.emit('receiveline', line.toString())
@@ -98,7 +98,7 @@ instance.prototype.init_tcp = function () {
 		self.socket.on('receiveline', function (line) {
 			debug('Received line from PDS:', line)
 			// check which device and version we have
-			if (line.match(/ShellApp waiting for input/))
+			if (line.match(/ShellApp waiting for input/)) {
 				self.socket.send(
 					'\r' +
 					'VER -?\r' +
@@ -106,25 +106,23 @@ instance.prototype.init_tcp = function () {
 					'PROGRAM -?\r' +
 					'LOGOSEL -?\r'
 				)
+			}
 
 			if (line.match(/VER \d/)) {
 				self.firmwareVersion = line.match(/VER ((?:\d+\.?)+)/)[1]
 				if (parseInt(self.firmwareVersion) >= 3) self.firmwareVersionIsOver3 = true
-				debug ('version = ', self.firmwareVersion, ' is over 3: ', self.firmwareVersionIsOver3)
+				debug('version = ', self.firmwareVersion, ' is over 3: ', self.firmwareVersionIsOver3)
 			}
 
-			if (line.match(/PREVIEW -i\d+/))
-			{
+			if (line.match(/PREVIEW -i\d+/)) {
 				self.states['preview_bg'] = parseInt(line.match(/-i(\d+)/)[1])
 				self.checkFeedbacks('preview_bg')
 			}
-			if (line.match(/PROGRAM -i\d+/))
-			{
+			if (line.match(/PROGRAM -i\d+/)) {
 				self.states['program_bg'] = parseInt(line.match(/-i(\d+)/)[1])
 				self.checkFeedbacks('program_bg')
 			}
-			if (line.match(/LOGOSEL -l \d+/))
-			{
+			if (line.match(/LOGOSEL -l \d+/)) {
 				self.states['logo_bg'] = parseInt(line.match(/-l (\d+)/)[1])
 				self.checkFeedbacks('logo_bg')
 			}
@@ -137,7 +135,7 @@ instance.prototype.init_tcp = function () {
 
 			// Save current state preview for feedback
 			if (line.match(/TAKE -e 0/)) {
-				const curPreview = self.states['preview_bg'];
+				const curPreview = self.states['preview_bg']
 				self.states['preview_bg'] = self.states['program_bg']
 				self.states['program_bg'] = curPreview
 				self.checkFeedbacks('preview_bg')
@@ -146,27 +144,56 @@ instance.prototype.init_tcp = function () {
 
 			if (line.match(/-e -\d+/)) {
 				if (line.match(/ISEL -e -9999/)) {
-					self.log('error', 'Current selected input "'+ self.states['preview_bg']+
-						'" on '+ self.config.label + ' is' + ' a invalid signal!')
+					self.log('error', 'Current selected input "' + self.states['preview_bg'] +
+						'" on ' + self.config.label + ' is' + ' a invalid signal!')
 					return
 				}
 
 				switch (parseInt(line.match(/-e -(\d+)/)[1])) {
-					case 9999: self.log('error','Received generic fail error from PDS '+ self.config.label +': '+ line); break
-					case 9998: self.log('error','PDS '+ self.config.label +' says: Operation is not applicable in current state: '+ line); break
-					case 9997: self.log('error','Received UI related error from PDS '+ self.config.label +', did not get response from device: '+ line); break
-					case 9996: self.log('error','Received UI related error from PDS '+ self.config.label +', did not get valid response from device: '+ line); break
-					case 9995: self.log('error','PDS '+ self.config.label +' says: Timeout occurred: '+ line); break
-					case 9994: self.log('error','PDS '+ self.config.label +' says: Parameter / data out of range: '+ line); break
-					case 9993: self.log('error','PDS '+ self.config.label +' says: Searching for data in an index, no matching data: '+ line); break
-					case 9992: self.log('error','PDS '+ self.config.label +' says: Checksum didn\'t match: '+ line); break
-					case 9991: self.log('error','PDS '+ self.config.label +' says: Version didn\'t match: '+ line); break
-					case 9990: self.log('error','Received UI related error from PDS '+ self.config.label +', current device interface not supported: '+ line); break
-					case 9989: self.log('error','PDS '+ self.config.label +' says: Pointer operation invalid: '+ line); break
-					case 9988: self.log('error','PDS '+ self.config.label +' says: Part of command had error: '+ line); break
-					case 9987: self.log('error','PDS '+ self.config.label +' says: Buffer overflow: '+ line); break
-					case 9986: self.log('error','PDS '+ self.config.label +' says: Initialization is not done (still in progress): '+ line); break
-					default: self.log('error','Received unspecified error from PDS '+ self.config.label +': '+ line)
+					case 9999:
+						self.log('error', 'Received generic fail error from PDS ' + self.config.label + ': ' + line)
+						break
+					case 9998:
+						self.log('error', 'PDS ' + self.config.label + ' says: Operation is not applicable in current state: ' + line)
+						break
+					case 9997:
+						self.log('error', 'Received UI related error from PDS ' + self.config.label + ', did not get response from device: ' + line)
+						break
+					case 9996:
+						self.log('error', 'Received UI related error from PDS ' + self.config.label + ', did not get valid response from device: ' + line)
+						break
+					case 9995:
+						self.log('error', 'PDS ' + self.config.label + ' says: Timeout occurred: ' + line)
+						break
+					case 9994:
+						self.log('error', 'PDS ' + self.config.label + ' says: Parameter / data out of range: ' + line)
+						break
+					case 9993:
+						self.log('error', 'PDS ' + self.config.label + ' says: Searching for data in an index, no matching data: ' + line)
+						break
+					case 9992:
+						self.log('error', 'PDS ' + self.config.label + ' says: Checksum didn\'t match: ' + line)
+						break
+					case 9991:
+						self.log('error', 'PDS ' + self.config.label + ' says: Version didn\'t match: ' + line)
+						break
+					case 9990:
+						self.log('error', 'Received UI related error from PDS ' + self.config.label + ', current device interface not supported: ' + line)
+						break
+					case 9989:
+						self.log('error', 'PDS ' + self.config.label + ' says: Pointer operation invalid: ' + line)
+						break
+					case 9988:
+						self.log('error', 'PDS ' + self.config.label + ' says: Part of command had error: ' + line)
+						break
+					case 9987:
+						self.log('error', 'PDS ' + self.config.label + ' says: Buffer overflow: ' + line)
+						break
+					case 9986:
+						self.log('error', 'PDS ' + self.config.label + ' says: Initialization is not done (still in progress): ' + line)
+						break
+					default:
+						self.log('error', 'Received unspecified error from PDS ' + self.config.label + ': ' + line)
 				}
 			}
 		})
@@ -175,7 +202,7 @@ instance.prototype.init_tcp = function () {
 
 // Return config fields for web config
 instance.prototype.config_fields = function () {
-	const self = this;
+	const self = this
 
 	return [
 		{
@@ -198,7 +225,7 @@ instance.prototype.config_fields = function () {
 
 // When module gets deleted
 instance.prototype.destroy = function () {
-	const self = this;
+	const self = this
 
 	if (self.timer) {
 		clearInterval(self.timer)
@@ -215,8 +242,8 @@ instance.prototype.destroy = function () {
 }
 
 instance.prototype.init_feedbacks = function () {
-	const self = this;
-	const feedbacks = {};
+	const self = this
+	const feedbacks = {}
 
 	feedbacks['preview_bg'] = {
 		label: 'Change colors for preview',
@@ -226,13 +253,13 @@ instance.prototype.init_feedbacks = function () {
 				type: 'colorpicker',
 				label: 'Foreground color',
 				id: 'fg',
-				default: self.rgb(255,255,255)
+				default: self.rgb(255, 255, 255)
 			},
 			{
 				type: 'colorpicker',
 				label: 'Background color',
 				id: 'bg',
-				default: self.rgb(0,255,0)
+				default: self.rgb(0, 255, 0)
 			},
 			{
 				type: 'dropdown',
@@ -252,13 +279,13 @@ instance.prototype.init_feedbacks = function () {
 				type: 'colorpicker',
 				label: 'Foreground color',
 				id: 'fg',
-				default: self.rgb(255,255,255)
+				default: self.rgb(255, 255, 255)
 			},
 			{
 				type: 'colorpicker',
 				label: 'Background color',
 				id: 'bg',
-				default: self.rgb(255,0,0)
+				default: self.rgb(255, 0, 0)
 			},
 			{
 				type: 'dropdown',
@@ -278,13 +305,13 @@ instance.prototype.init_feedbacks = function () {
 				type: 'colorpicker',
 				label: 'Foreground color',
 				id: 'fg',
-				default: self.rgb(255,255,255)
+				default: self.rgb(255, 255, 255)
 			},
 			{
 				type: 'colorpicker',
 				label: 'Background color',
 				id: 'bg',
-				default: self.rgb(255,0,0)
+				default: self.rgb(255, 0, 0)
 			},
 			{
 				type: 'dropdown',
@@ -300,7 +327,7 @@ instance.prototype.init_feedbacks = function () {
 }
 
 instance.prototype.feedback = function (feedback, bank) {
-	const self = this;
+	const self = this
 
 	if (feedback.type === 'program_bg') {
 		if (self.states['program_bg'] === parseInt(feedback.options.input)) {
@@ -324,7 +351,7 @@ instance.prototype.feedback = function (feedback, bank) {
 }
 
 instance.prototype.actions = function (system) {
-	const self = this;
+	const self = this
 
 	self.PDS_VARIANT = [
 		{ id: PDS_VARIANT_701, label: 'PDS-701' },
@@ -333,10 +360,10 @@ instance.prototype.actions = function (system) {
 	]
 
 	self.CHOICES_LOGOS = [
-		{id: 0, label: 'Black'},
-		{id: 1, label: 'Logo 1'},
-		{id: 2, label: 'Logo 2'},
-		{id: 3, label: 'Logo 3'}
+		{ id: 0, label: 'Black' },
+		{ id: 1, label: 'Logo 1' },
+		{ id: 2, label: 'Logo 2' },
+		{ id: 3, label: 'Logo 3' }
 	]
 
 	self.CHOICES_INPUTS = [
@@ -345,7 +372,7 @@ instance.prototype.actions = function (system) {
 		{ id: 3, label: '3 VGA' },
 		{ id: 4, label: '4 VGA' },
 		{ id: 5, label: '5 DVI' },
-		{ id: 6, label: '6 DVI' },
+		{ id: 6, label: '6 DVI' }
 	]
 
 	// See self.PDS_VARIANT
@@ -392,7 +419,7 @@ instance.prototype.actions = function (system) {
 				label: 'Freeze',
 				id: 'm',
 				default: '1',
-				choices: [{id: 0, label: 'unfrozen'}, {id: 1, label: 'frozen'}]
+				choices: [{ id: 0, label: 'unfrozen' }, { id: 1, label: 'frozen' }]
 			}]
 		},
 		'BLACK': {
@@ -402,7 +429,7 @@ instance.prototype.actions = function (system) {
 				label: 'Mode',
 				id: 'm',
 				default: '1',
-				choices: [{id: 0, label: 'normal'}, {id: 1, label: 'black'}]
+				choices: [{ id: 0, label: 'normal' }, { id: 1, label: 'black' }]
 			}]
 		},
 		'OTPM': {
@@ -413,14 +440,14 @@ instance.prototype.actions = function (system) {
 					label: 'Output',
 					id: 'o',
 					default: '1',
-					choices: [{id: 1, label: 'Program'}, {id: 3, label: 'Preview'}]
+					choices: [{ id: 1, label: 'Program' }, { id: 3, label: 'Preview' }]
 				},
 				{
 					type: 'dropdown',
 					label: 'Testpattern',
 					id: 'm',
 					default: '1',
-					choices: [{id: 0, label: 'off'}, {id: 1, label: 'on'}]
+					choices: [{ id: 0, label: 'off' }, { id: 1, label: 'on' }]
 				}
 			]
 		},
@@ -432,7 +459,7 @@ instance.prototype.actions = function (system) {
 					label: 'Output',
 					id: 'o',
 					default: '1',
-					choices: [{id: 1, label: 'Program'}, {id: 3, label: 'Preview'}]
+					choices: [{ id: 1, label: 'Program' }, { id: 3, label: 'Preview' }]
 				},
 				{
 					type: 'dropdown',
@@ -440,21 +467,21 @@ instance.prototype.actions = function (system) {
 					id: 't',
 					default: '4',
 					choices: [
-						{id: 4, label: '16x16 Grid'},
-						{id: 5, label: '32x32 Grid'},
-						{id: 1, label: 'H Ramp'},
-						{id: 2, label: 'V Ramp'},
-						{id: 6, label: 'Burst'},
-						{id: 7, label: '75% Color Bars'},
-						{id: 3, label: '100% Color Bars'},
-						{id: 9, label: 'Vertical Gray Steps'},
-						{id: 10, label: 'Horizontal Gray Steps'},
-						{id: 8, label: '50% Gray'},
-						{id: 11, label: 'White'},
-						{id: 12, label: 'Black'},
-						{id: 13, label: 'Red'},
-						{id: 14, label: 'Green'},
-						{id: 15, label: 'Blue'}
+						{ id: 4, label: '16x16 Grid' },
+						{ id: 5, label: '32x32 Grid' },
+						{ id: 1, label: 'H Ramp' },
+						{ id: 2, label: 'V Ramp' },
+						{ id: 6, label: 'Burst' },
+						{ id: 7, label: '75% Color Bars' },
+						{ id: 3, label: '100% Color Bars' },
+						{ id: 9, label: 'Vertical Gray Steps' },
+						{ id: 10, label: 'Horizontal Gray Steps' },
+						{ id: 8, label: '50% Gray' },
+						{ id: 11, label: 'White' },
+						{ id: 12, label: 'Black' },
+						{ id: 13, label: 'Red' },
+						{ id: 14, label: 'Green' },
+						{ id: 15, label: 'Blue' }
 					]
 				}
 			]
@@ -467,13 +494,13 @@ instance.prototype.actions = function (system) {
 					label: 'Output',
 					id: 'o',
 					default: '1',
-					choices: [{id: 1, label: 'Program'}, {id: 3, label: 'Preview'}]
+					choices: [{ id: 1, label: 'Program' }, { id: 3, label: 'Preview' }]
 				}, {
 					type: 'dropdown',
 					label: 'Rasterbox',
 					id: 'm',
 					default: '1',
-					choices: [{id: 0, label: 'off'}, {id: 1, label: 'on'}]
+					choices: [{ id: 0, label: 'off' }, { id: 1, label: 'on' }]
 				}
 			]
 		},
@@ -505,9 +532,9 @@ instance.prototype.actions = function (system) {
 				id: 'l',
 				default: '1',
 				choices: [
-					{id: 1, label: 'Logo 1'},
-					{id: 2, label: 'Logo 2'},
-					{id: 3, label: 'Logo 3'}
+					{ id: 1, label: 'Logo 1' },
+					{ id: 2, label: 'Logo 2' },
+					{ id: 3, label: 'Logo 3' }
 				]
 			}]
 		},
@@ -518,7 +545,7 @@ instance.prototype.actions = function (system) {
 				label: 'Autotake',
 				id: 'm',
 				default: '0',
-				choices: [{id: 0, label: 'off'}, {id: 1, label: 'on'}]
+				choices: [{ id: 0, label: 'off' }, { id: 1, label: 'on' }]
 			}]
 		},
 		'PENDPIP': {
@@ -529,13 +556,16 @@ instance.prototype.actions = function (system) {
 					label: 'PiP',
 					id: 'p',
 					default: '1',
-					choices: [{id: 1, label: 'PiP 1'}, {id: 2, label: 'PiP 2'}]
+					choices: [{ id: 1, label: 'PiP 1' }, { id: 2, label: 'PiP 2' }]
 				}, {
 					type: 'dropdown',
 					label: 'PiP on/off',
 					id: 'm',
 					default: '0',
-					choices: [{id: 0, label: 'unpend (no change on Take)'}, {id: 1, label: 'pend (PiP on/off on Take)'}]
+					choices: [{ id: 0, label: 'unpend (no change on Take)' }, {
+						id: 1,
+						label: 'pend (PiP on/off on Take)'
+					}]
 				}
 			]
 		},
@@ -547,7 +577,7 @@ instance.prototype.actions = function (system) {
 					label: 'PiP',
 					id: 'p',
 					default: '1',
-					choices: [{id: 0, label: 'All PiPs'}, {id: 1, label: 'PiP 1'}, {id: 2, label: 'PiP 2'}]
+					choices: [{ id: 0, label: 'All PiPs' }, { id: 1, label: 'PiP 1' }, { id: 2, label: 'PiP 2' }]
 				},
 				{
 					type: 'dropdown',
@@ -557,26 +587,25 @@ instance.prototype.actions = function (system) {
 					choices: self.CHOICES_INPUTS
 				}
 			]
-		},
+		}
 	})
 }
 
 instance.prototype.action = function (action) {
-	const self = this;
+	const self = this
 
-	let cmd = action.action;
+	let cmd = action.action
 	for (let option in action.options) {
 		if (action.options.hasOwnProperty(option) && action.options[option] !== '') cmd += ' -' + option + ' ' + action.options[option]
 	}
-	cmd +='\r'
+	cmd += '\r'
 
 	if (cmd !== undefined) {
-		debug('sending tcp',cmd,'to',self.config.host)
+		debug('sending tcp', cmd, 'to', self.config.host)
 
 		if (self.socket !== undefined && self.socket.connected) {
 			self.socket.send(cmd)
-		}
-		else {
+		} else {
 			debug('Socket not connected :(')
 		}
 	}
