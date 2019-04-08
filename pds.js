@@ -1,4 +1,3 @@
-//test by jonas
 const tcp = require('../../tcp')
 const instance_skel = require('../../instance_skel')
 let debug
