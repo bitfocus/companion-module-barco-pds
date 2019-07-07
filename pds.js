@@ -374,7 +374,7 @@ instance.prototype.actions = function (system) {
 		{ id: 5, label: '5 DVI' },
 		{ id: 6, label: '6 DVI' }
 	]
-	
+
 	self.CHOICES_PIPRECALL = [
 		{ id: 1, label: '1' },
 		{ id: 2, label: '2' },
@@ -387,7 +387,7 @@ instance.prototype.actions = function (system) {
 		{ id: 9, label: '9' },
 		{ id: 10, label: '10' }
 	]
-	
+
 	// See self.PDS_VARIANT
 	if (self.config.variant == PDS_VARIANT_701 ||
 		self.config.variant == PDS_VARIANT_902) {
@@ -600,7 +600,7 @@ instance.prototype.actions = function (system) {
 					choices: self.CHOICES_INPUTS
 				}
 			]
-		}
+		},
 		'PIPREC': {
 			label: 'PiP Recall',
 			options: [
