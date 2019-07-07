@@ -374,7 +374,20 @@ instance.prototype.actions = function (system) {
 		{ id: 5, label: '5 DVI' },
 		{ id: 6, label: '6 DVI' }
 	]
-
+	
+	self.CHOICES_PIPRECALL = [
+		{ id: 1, label: '1' },
+		{ id: 2, label: '2' },
+		{ id: 3, label: '3' },
+		{ id: 4, label: '4' },
+		{ id: 5, label: '5' },
+		{ id: 6, label: '6' },
+		{ id: 7, label: '7' },
+		{ id: 8, label: '8' },
+		{ id: 9, label: '9' },
+		{ id: 10, label: '10' }
+	]
+	
 	// See self.PDS_VARIANT
 	if (self.config.variant == PDS_VARIANT_701 ||
 		self.config.variant == PDS_VARIANT_902) {
@@ -585,6 +598,25 @@ instance.prototype.actions = function (system) {
 					id: 'i',
 					default: '1',
 					choices: self.CHOICES_INPUTS
+				}
+			]
+		}
+		'PIPREC': {
+			label: 'PiP Recall',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'PiP',
+					id: 'p',
+					default: '1',
+					choices: [{ id: 1, label: 'PiP 1' }, { id: 2, label: 'PiP 2' }]
+				},
+				{
+					type: 'dropdown',
+					label: 'Input',
+					id: 'f',
+					default: '1',
+					choices: self.CHOICES_PIPRECALL
 				}
 			]
 		}
