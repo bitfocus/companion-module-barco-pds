@@ -389,7 +389,8 @@ instance.prototype.actions = function (system) {
 	]
 
 	// See self.PDS_VARIANT
-	if (self.config.variant >= PDS_VARIANT_901) {
+	if (self.config.variant >= PDS_VARIANT_901 ||
+		self.config.variant == PDS_VARIANT_902) {
 		self.CHOICES_INPUTS.push({ id: 7, label: '7 DVI' })
 		self.CHOICES_INPUTS.push({ id: 8, label: '8 DVI' })
 	}
