@@ -26,6 +26,7 @@ instance.prototype.updateConfig = function (config) {
 	debug('updateConfig() destroying and reiniting..')
 	self.destroy()
 	self.init()
+	self.actions() // export actions
 }
 
 instance.prototype.init = function () {
