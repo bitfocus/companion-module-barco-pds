@@ -24,9 +24,10 @@ function instance (system, id, config) {
 instance.prototype.updateConfig = function (config) {
 	const self = this
 	debug('updateConfig() destroying and reiniting..')
+	self.config = config;
 	self.destroy()
-	self.init()
 	self.actions() // export actions
+	self.init()
 }
 
 instance.prototype.init = function () {
