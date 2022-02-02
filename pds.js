@@ -405,7 +405,7 @@ instance.prototype.actions = function (system) {
 
 	self.CHOICES_INPUTS.push({ id: 10, label: 'Black/Logo' })
 
-	self.system.emit('instance_actions', self.id, {
+	self.setActions({
 		'TAKE': {
 			label: 'Take'
 		},
