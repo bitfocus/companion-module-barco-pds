@@ -1,2 +1,2 @@
 # companion-module-barco-pds
-See HELP.md and LICENSE
+See companion/HELP.md and LICENSE

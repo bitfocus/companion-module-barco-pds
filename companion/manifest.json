@@ -1,0 +1,33 @@
+{
+	"id": "barco-pds",
+	"name": "barco-pds",
+	"shortname": "pds",
+	"description": "Barco PDS seamless switcher plugin for Companion",
+	"version": "0.0.0",
+	"license": "MIT",
+	"repository": "git+https://github.com/bitfocus/companion-module-barco-pds.git",
+	"bugs": "https://github.com/bitfocus/companion-module-barco-pds/issues",
+	"maintainers": [
+		{
+			"name": "Dorian Meid",
+			"email": "meid@backstage.org"
+		}
+	],
+	"legacyIds": [
+		"barco_pds",
+		"pds"
+	],
+	"runtime": {
+		"type": "node18",
+		"api": "nodejs-ipc",
+		"apiVersion": "0.0.0",
+		"entrypoint": "../pds.js"
+	},
+	"manufacturer": "Barco",
+	"products": [
+		"PDS"
+	],
+	"keywords": [
+		"Image Processing"
+	]
+}
