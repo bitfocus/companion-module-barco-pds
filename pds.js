@@ -24,7 +24,7 @@ export class PDSinstance extends InstanceBase {
 		self.init_tcp()
 	}
 
-	updateConfig(config) {
+	configUpdated(config) {
 		const self = this
 		if (
 			(config.host && config.host !== self.config.host) ||
@@ -41,6 +41,7 @@ export class PDSinstance extends InstanceBase {
 		const self = this
 
 		if (self.socket === undefined) return
+		if (!self.socket.isConnected) return
 
 		self.socket.send('PREVIEW -?\r' + 'PROGRAM -?\r' + 'LOGOSEL -?\r')
 	}
@@ -68,7 +69,7 @@ export class PDSinstance extends InstanceBase {
 			})
 
 			self.socket.on('connect', () => {
-				self.log('debug', 'Connected')
+				self.log('debug', 'Connected to ' + self.config.host)
 
 				// Poll data from PDS every 4 secs
 				self.timer = setInterval(self.dataPoller.bind(self), 4000)
@@ -413,11 +414,30 @@ export class PDSinstance extends InstanceBase {
 
 		self.CHOICES_INPUTS.push({ id: 10, label: 'Black/Logo' })
 
+		const actionCallback = (action) => {
+			let cmd = action.actionId
+			for (let option in action.options) {
+				if (action.options.hasOwnProperty(option) && action.options[option] !== '')
+					cmd += ' -' + option + ' ' + action.options[option]
+			}
+			cmd += '\r'
+
+			if (cmd !== undefined) {
+				self.log('debug', 'sending tcp ' + cmd + ' to ' + self.config.host)
+
+				if (self.socket !== undefined && self.socket.isConnected) {
+					self.socket.send(cmd)
+				} else {
+					self.log('debug', 'Socket not connected :(')
+				}
+			}
+		}
+
 		self.setActionDefinitions({
 			TAKE: {
 				name: 'Take',
 				options: [],
-				callback: self.actionCallback,
+				callback: actionCallback,
 			},
 			ISEL: {
 				name: 'Select Input',
@@ -437,7 +457,7 @@ export class PDSinstance extends InstanceBase {
 						regex: '/^([1-9]|[1-5][0-9]|6[0-4])$/',
 					},
 				],
-				callback: self.actionCallback,
+				callback: actionCallback,
 			},
 			FREEZE: {
 				name: 'Freeze',
@@ -453,7 +473,7 @@ export class PDSinstance extends InstanceBase {
 						],
 					},
 				],
-				callback: self.actionCallback,
+				callback: actionCallback,
 			},
 			BLACK: {
 				name: 'Set Black Output',
@@ -469,7 +489,7 @@ export class PDSinstance extends InstanceBase {
 						],
 					},
 				],
-				callback: self.actionCallback,
+				callback: actionCallback,
 			},
 			OTPM: {
 				name: 'Set Testpattern on/off',
@@ -495,7 +515,7 @@ export class PDSinstance extends InstanceBase {
 						],
 					},
 				],
-				callback: self.actionCallback,
+				callback: actionCallback,
 			},
 			OTPT: {
 				name: 'Set Testpattern Type',
@@ -534,7 +554,7 @@ export class PDSinstance extends InstanceBase {
 						],
 					},
 				],
-				callback: self.actionCallback,
+				callback: actionCallback,
 			},
 			ORBM: {
 				name: 'Set Rasterbox on/off',
@@ -560,7 +580,7 @@ export class PDSinstance extends InstanceBase {
 						],
 					},
 				],
-				callback: self.actionCallback,
+				callback: actionCallback,
 			},
 			TRNTIME: {
 				name: 'Set Transition Time',
@@ -573,7 +593,7 @@ export class PDSinstance extends InstanceBase {
 						regex: '/^([0-9]|1[0-2])(\\.\\d)?$/',
 					},
 				],
-				callback: self.actionCallback,
+				callback: actionCallback,
 			},
 			LOGOSEL: {
 				name: 'Select Black/Logo',
@@ -586,7 +606,7 @@ export class PDSinstance extends InstanceBase {
 						choices: self.CHOICES_LOGOS,
 					},
 				],
-				callback: self.actionCallback,
+				callback: actionCallback,
 			},
 			LOGOSAVE: {
 				name: 'Save Logo',
@@ -603,7 +623,7 @@ export class PDSinstance extends InstanceBase {
 						],
 					},
 				],
-				callback: self.actionCallback,
+				callback: actionCallback,
 			},
 			AUTOTAKE: {
 				name: 'Set Autotake Mode on/off',
@@ -619,7 +639,7 @@ export class PDSinstance extends InstanceBase {
 						],
 					},
 				],
-				callback: self.actionCallback,
+				callback: actionCallback,
 			},
 			PENDPIP: {
 				name: 'Pend PiP Mode on/off',
@@ -648,7 +668,7 @@ export class PDSinstance extends InstanceBase {
 						],
 					},
 				],
-				callback: self.actionCallback,
+				callback: actionCallback,
 			},
 			PIPISEL: {
 				name: 'Pend PiP Input',
@@ -672,7 +692,7 @@ export class PDSinstance extends InstanceBase {
 						choices: self.CHOICES_INPUTS,
 					},
 				],
-				callback: self.actionCallback,
+				callback: actionCallback,
 			},
 			PIPREC: {
 				name: 'PiP Recall',
@@ -695,30 +715,9 @@ export class PDSinstance extends InstanceBase {
 						choices: self.CHOICES_PIPRECALL,
 					},
 				],
-				callback: self.actionCallback,
+				callback: actionCallback,
 			},
 		})
-	}
-
-	actionCallback(action) {
-		const self = this
-
-		let cmd = action.actionId
-		for (let option in action.options) {
-			if (action.options.hasOwnProperty(option) && action.options[option] !== '')
-				cmd += ' -' + option + ' ' + action.options[option]
-		}
-		cmd += '\r'
-
-		if (cmd !== undefined) {
-			self.log('debug', 'sending tcp ' + cmd + ' to ' + self.config.host)
-
-			if (self.socket !== undefined && self.socket.isConnected) {
-				self.socket.send(cmd)
-			} else {
-				self.log('debug', 'Socket not connected :(')
-			}
-		}
 	}
 }
 
