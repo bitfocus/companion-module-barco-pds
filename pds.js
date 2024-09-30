@@ -43,6 +43,16 @@ export class PDSinstance extends InstanceBase {
 		self.socket.send('PREVIEW -?\r' + 'PROGRAM -?\r' + 'LOGOSEL -?\r')
 	}
 
+	/**
+	 * INTERNAL: Is socket connected?
+	 *
+	 * @private
+	 * @returns {boolean}
+	 */
+	_isConnected() {
+		return this.socket !== undefined && this.socket?.isConnected;
+	}
+
 	init_tcp() {
 		const self = this
 		let receivebuffer = ''
@@ -412,23 +422,25 @@ export class PDSinstance extends InstanceBase {
 		self.CHOICES_INPUTS.push({ id: 10, label: 'Black/Logo' })
 
 		const actionCallback = (action) => {
-			let cmd = action.actionId
+			if (!this._isConnected) {
+				this.log('debug', 'Socket not connected :(')
+				return;
+			}
+
+			let cmd = action.action;
 			for (let option in action.options) {
 				if (action.options.hasOwnProperty(option) && action.options[option] !== '') {
-					cmd += ' -' + option + ' ' + action.options[option]
+					cmd += ' -' + option + ' ' + action.options[option];
 				}
 			}
+			cmd += '\r';
 
-			if (cmd !== undefined) {
-				cmd += '\r'
-				self.log('debug', 'sending tcp ' + cmd + ' to ' + self.config.host)
-
-				if (self.socket !== undefined && self.socket.isConnected) {
-					self.socket.send(cmd)
-				} else {
-					self.log('debug', 'Socket not connected :(')
-				}
+			if (action.action === 'FREEZE') {
+				cmd += 'FPUPDATE\r';
 			}
+
+			this.log('debug', 'sending tcp ' + cmd + ' to ' + self.config.host)
+			this.socket.send(cmd);
 		}
 
 		self.setActionDefinitions({
