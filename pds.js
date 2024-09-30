@@ -19,8 +19,8 @@ export class PDSinstance extends InstanceBase {
 		self.states = {}
 		self.timer = undefined
 
+		self.init_actions()
 		self.init_feedbacks()
-		self.init_actions() // export actions
 		self.init_tcp()
 	}
 
