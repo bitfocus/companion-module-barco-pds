@@ -1,4 +1,4 @@
-import { combineRgb, InstanceBase, InstanceStatus, Regex, runEntrypoint, TCPHelper } from '@companion-module/base'
+import { combineRgb, InstanceBase, Regex, runEntrypoint, TCPHelper } from '@companion-module/base'
 
 const PDS_VARIANT_701 = 1
 const PDS_VARIANT_901 = 2
@@ -9,31 +9,28 @@ export class PDSinstance extends InstanceBase {
 		super(internal)
 	}
 
-	init(config) {
-		const self = this
-		self.config = config
+	async init(config, isFirstInit) {
+		this.config = config
 
 		this.firmwareVersion = '0'
 		this.firmwareVersionIsOver3 = false // some commands are only working with firmware >= 3
 
-		self.states = {}
+		this.states = {}
 		self.timer = undefined
 
-		self.init_actions()
-		self.init_feedbacks()
-		self.init_tcp()
+		this.init_actions()
+		this.init_feedbacks()
+		this.init_tcp()
 	}
 
-	configUpdated(config) {
-		const self = this
+	async configUpdated(config) {
 		if (
-			(config.host && config.host !== self.config.host) ||
-			(config.variant && config.variant !== self.config.variant)
+			(config.host && config.host !== this.config.host) ||
+			(config.variant && config.variant !== this.config.variant)
 		) {
-			self.log('debug', 'Config updated, destroying and reiniting..')
-			self.config = config
-			self.destroy()
-			self.init(self.config)
+			this.log('debug', 'Config updated, destroying and reiniting..')
+			await this.destroy()
+			await this.init(this.config)
 		}
 	}
 
@@ -240,7 +237,7 @@ export class PDSinstance extends InstanceBase {
 	}
 
 	// When module gets deleted
-	destroy() {
+	async destroy() {
 		const self = this
 
 		if (self.timer) {
