@@ -417,12 +417,13 @@ export class PDSinstance extends InstanceBase {
 		const actionCallback = (action) => {
 			let cmd = action.actionId
 			for (let option in action.options) {
-				if (action.options.hasOwnProperty(option) && action.options[option] !== '')
+				if (action.options.hasOwnProperty(option) && action.options[option] !== '') {
 					cmd += ' -' + option + ' ' + action.options[option]
+				}
 			}
-			cmd += '\r'
 
 			if (cmd !== undefined) {
+				cmd += '\r'
 				self.log('debug', 'sending tcp ' + cmd + ' to ' + self.config.host)
 
 				if (self.socket !== undefined && self.socket.isConnected) {
